@@ -1,0 +1,545 @@
+{
+  "info": {
+    "name": "EventSpace Pro API",
+    "description": "Collection complète pour tester l'API EventSpace Pro",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentification",
+      "item": [
+        {
+          "name": "1. Inscription Utilisateur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"123456\",\n  \"phone\": \"+33123456789\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "        console.log('Token sauvegardé:', response.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Connexion Utilisateur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "        console.log('Token de connexion sauvegardé:', response.token);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Profil Utilisateur",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "4. Vérifier Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Espaces",
+      "item": [
+        {
+          "name": "1. Créer un Espace",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Salle de Conférence Moderne",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Une salle de conférence moderne avec équipements audiovisuels de pointe",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "CONFERENCE_ROOM",
+                  "type": "text"
+                },
+                {
+                  "key": "capacity",
+                  "value": "50",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "150.00",
+                  "type": "text"
+                },
+                {
+                  "key": "priceType",
+                  "value": "PER_HOUR",
+                  "type": "text"
+                },
+                {
+                  "key": "amenities",
+                  "value": "[\"WiFi\", \"Projecteur\", \"Tableau blanc\", \"Système audio\", \"Climatisation\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "{\"street\": \"123 Rue de la Paix\", \"city\": \"Paris\", \"postalCode\": \"75001\", \"country\": \"France\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "coordinates",
+                  "value": "{\"latitude\": 48.8566, \"longitude\": 2.3522}",
+                  "type": "text"
+                },
+                {
+                  "key": "openingHours",
+                  "value": "{\"monday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"tuesday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"wednesday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"thursday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"friday\": {\"open\": \"09:00\", \"close\": \"18:00\"}}",
+                  "type": "text"
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.space && response.space._id) {",
+                  "        pm.collectionVariables.set('spaceId', response.space._id);",
+                  "        console.log('Espace créé avec ID:', response.space._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Lister tous les Espaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Obtenir un Espace par ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{spaceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces", "{{spaceId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Filtrer les Espaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces?type=CONFERENCE_ROOM&minPrice=100&maxPrice=200&minCapacity=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "CONFERENCE_ROOM"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "100"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "200"
+                },
+                {
+                  "key": "minCapacity",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Mettre à jour un Espace",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Salle de Conférence Moderne - Mise à jour\",\n  \"description\": \"Description mise à jour\",\n  \"price\": 175.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{spaceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces", "{{spaceId}}"]
+            }
+          }
+        },
+        {
+          "name": "6. Supprimer un Espace",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/spaces/{{spaceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "spaces", "{{spaceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Réservations",
+      "item": [
+        {
+          "name": "1. Créer une Réservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"spaceId\": \"{{spaceId}}\",\n  \"startDate\": \"2024-02-15T10:00:00.000Z\",\n  \"endDate\": \"2024-02-15T14:00:00.000Z\",\n  \"attendees\": 25,\n  \"purpose\": \"Réunion d'équipe\",\n  \"specialRequirements\": \"Besoin d'un projecteur et d'un tableau blanc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.booking && response.booking._id) {",
+                  "        pm.collectionVariables.set('bookingId', response.booking._id);",
+                  "        console.log('Réservation créée avec ID:', response.booking._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Lister les Réservations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Obtenir une Réservation par ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Mettre à jour le Statut",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "5. Ajouter un Paiement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 600.00,\n  \"method\": \"CARD\",\n  \"transactionId\": \"txn_123456789\",\n  \"status\": \"COMPLETED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}", "payment"]
+            }
+          }
+        },
+        {
+          "name": "6. Ajouter un Avis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent espace, très bien équipé et accueil parfait !\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}", "review"]
+            }
+          }
+        },
+        {
+          "name": "7. Annuler une Réservation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\",\n  \"cancellationReason\": \"Changement de planning\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Tests de Base",
+      "item": [
+        {
+          "name": "Test de Connexion API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+} 
