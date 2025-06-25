@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // Configuration du transporteur email
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
   port: process.env.SMTP_PORT || 2525,
   secure: false, // true pour 465, false pour les autres ports
