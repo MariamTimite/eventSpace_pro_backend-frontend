@@ -142,7 +142,7 @@ userSchema.methods.updateLastLogin = async function() {
 };
 
 // 📊 Index pour améliorer les performances
-userSchema.index({ email: 1 });
+// userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ createdAt: -1 });
 
