@@ -2,6 +2,7 @@ const express = require('express');
 const Booking = require('../models/Booking');
 const Space = require('../models/Space');
 const { auth } = require('../middleware/auth');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 
@@ -116,6 +117,38 @@ router.post('/', auth, async (req, res) => {
     await savedBooking.populate('space');
     await savedBooking.populate('user', 'firstName lastName email');
 
+    // Envoi d'un email de confirmation à l'utilisateur
+    try {
+      await emailService.sendBookingConfirmation({
+        to: savedBooking.user.email,
+        userName: savedBooking.user.firstName || savedBooking.user.lastName || savedBooking.user.email,
+        spaceName: savedBooking.space.name,
+        startDate: savedBooking.startDate,
+        endDate: savedBooking.endDate,
+        startTime: savedBooking.startTime,
+        endTime: savedBooking.endTime,
+        totalPrice: savedBooking.totalPrice
+      });
+    } catch (err) {
+      console.error('Erreur lors de l\'envoi de l\'email de confirmation:', err);
+    }
+
+    // Envoi d'un email de notification à l'admin
+    try {
+      await emailService.sendBookingNotificationToAdmin({
+        to: process.env.ADMIN_EMAIL || 'admin@eventspace.com',
+        userName: savedBooking.user.firstName || savedBooking.user.lastName || savedBooking.user.email,
+        spaceName: savedBooking.space.name,
+        startDate: savedBooking.startDate,
+        endDate: savedBooking.endDate,
+        startTime: savedBooking.startTime,
+        endTime: savedBooking.endTime,
+        totalPrice: savedBooking.totalPrice
+      });
+    } catch (err) {
+      console.error('Erreur lors de l\'envoi de l\'email admin:', err);
+    }
+
     res.status(201).json({
       success: true,
       message: 'Réservation créée avec succès',
@@ -197,6 +230,9 @@ router.get('/', auth, async (req, res) => {
 
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // DEBUG : log des filtres et de l'utilisateur
+    console.log('DEBUG filters:', filters, 'user in req:', req.user._id, 'role:', req.user.role);
 
     const bookings = await Booking.find(filters)
       .populate('space', 'name type address images owner')

@@ -126,7 +126,7 @@ spaceSchema.virtual('fullAddress').get(function() {
 
 // 🔗 Virtual pour le prix formaté
 spaceSchema.virtual('formattedPrice').get(function() {
-  return `${this.price} FCFA/${this.priceType.toLowerCase()}`;
+  return this.priceType ? `${this.price} FCFA/${this.priceType.toLowerCase()}` : `${this.price} FCFA`;
 });
 
 // 🔗 Virtual pour les réservations

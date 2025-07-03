@@ -170,7 +170,7 @@ const EditSpace = () => {
                 {existingImages.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {existingImages.map((img, idx) => (
-                      <img key={idx} src={img} alt="Espace" className="w-16 h-16 object-cover rounded" />
+                      <img key={idx} src={img.startsWith('http') ? img : `http://localhost:5001/${img.replace(/\\/g, '/')}`} alt="Espace" className="w-16 h-16 object-cover rounded" />
                     ))}
                   </div>
                 )}

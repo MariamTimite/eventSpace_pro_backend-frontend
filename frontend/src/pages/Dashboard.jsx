@@ -298,8 +298,15 @@ const Dashboard = () => {
                               <div className="flex-shrink-0 h-10 w-10">
                                 <img
                                   className="h-10 w-10 rounded-lg object-cover"
-                                  src={reservation.space?.images?.[0] || '/placeholder.jpg'}
-                                  alt=""
+                                  src={
+                                    reservation.space?.images?.[0]
+                                      ? (reservation.space.images[0].startsWith('http')
+                                          ? reservation.space.images[0]
+                                          : `http://localhost:5001/${reservation.space.images[0].replace(/\\/g, '/')}`)
+                                      : '/placeholder.jpg'
+                                  }
+                                  alt={reservation.space?.name || ''}
+                                  onError={e => { e.target.src = '/placeholder.jpg'; }}
                                 />
                               </div>
                               <div className="ml-4">
@@ -324,7 +331,7 @@ const Dashboard = () => {
                             <BookingStatusBadge
                               status={reservation.status}
                               onStatusChange={(action) => handleStatusChange(reservation._id, action)}
-                              isAdmin={user?.role === 'admin'}
+                              isAdmin={user?.role?.toLowerCase() === 'admin'}
                             />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

@@ -108,7 +108,11 @@ const SpaceDetails = () => {
             <div className="mb-8">
               <div className="relative h-96 rounded-lg overflow-hidden mb-4">
                 <img
-                  src={space.images?.[selectedImage]}
+                  src={space.images && space.images[selectedImage]
+                    ? (space.images[selectedImage].startsWith('http')
+                        ? space.images[selectedImage]
+                        : `http://localhost:5001/${space.images[selectedImage].replace(/\\/g, '/')}`)
+                    : ''}
                   alt={space.name}
                   className="w-full h-full object-cover"
                 />
@@ -123,7 +127,9 @@ const SpaceDetails = () => {
                     }`}
                   >
                     <img
-                      src={image}
+                      src={image.startsWith('http')
+                        ? image
+                        : `http://localhost:5001/${image.replace(/\\/g, '/')}`}
                       alt={`${space.name} - Image ${index + 1}`}
                       className="w-full h-full object-cover"
                     />

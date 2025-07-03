@@ -156,7 +156,11 @@ const BookingModal = ({ space, isOpen, onClose, onSuccess }) => {
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center space-x-4">
               <img
-                src={space?.images?.[0] || '/placeholder-space.jpg'}
+                src={space?.images?.[0]
+                  ? (space.images[0].startsWith('http')
+                      ? space.images[0]
+                      : `http://localhost:5001/${space.images[0].replace(/\\/g, '/')}`)
+                  : '/placeholder-space.jpg'}
                 alt={space?.name}
                 className="w-16 h-16 object-cover rounded-lg"
               />

@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // Configuration du transporteur email
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
   port: process.env.SMTP_PORT || 2525,
   secure: false, // true pour 465, false pour les autres ports
@@ -131,6 +131,25 @@ const emailService = {
       console.error('❌ Erreur envoi email d\'annulation:', error);
       throw error;
     }
+  },
+
+  async sendBookingNotificationToAdmin({ to, userName, spaceName, startDate, endDate, startTime, endTime, totalPrice }) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@eventspace.com',
+      to,
+      subject: 'Nouvelle réservation reçue',
+      html: `
+        <h2>Nouvelle réservation sur EventSpace Pro</h2>
+        <p><strong>Utilisateur :</strong> ${userName}</p>
+        <p><strong>Espace :</strong> ${spaceName}</p>
+        <p><strong>Date :</strong> ${new Date(startDate).toLocaleDateString()}${endDate && endDate !== startDate ? ' au ' + new Date(endDate).toLocaleDateString() : ''}</p>
+        <p><strong>Heure :</strong> ${startTime} - ${endTime}</p>
+        <p><strong>Prix total :</strong> ${totalPrice} FCFA</p>
+        <p>Connectez-vous à l'interface admin pour gérer cette réservation.</p>
+      `
+    };
+    const info = await transporter.sendMail(mailOptions);
+    return info;
   }
 };
 

@@ -285,85 +285,92 @@ const Spaces = () => {
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSpaces.map((space) => (
-              <div key={space.id || space._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-                {/* Image */}
-                <div className="h-48 relative overflow-hidden">
-                  <img 
-                    src={getSpaceImage(space.category, space.id)} 
-                    alt={space.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop';
-                    }}
-                  />
-                  <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-2 py-1 rounded-full">
-                    <span className="text-sm font-semibold text-gray-900">{space.price.toLocaleString()} FCFA/jour</span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-semibold text-gray-900">{space.name}</h3>
-                    <div className="flex items-center">
-                      <span>
-                        {space.rating?.average !== undefined ? `${space.rating.average} ★` : 'N/A'}
-                        {space.rating?.count !== undefined ? ` (${space.rating.count} avis)` : ''}
-                      </span>
+            {filteredSpaces.map((space) => {
+              console.log('Images pour', space.name, space.images);
+              return (
+                <div key={space.id || space._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  {/* Image */}
+                  <div className="h-48 relative overflow-hidden">
+                    <img 
+                      src={space.images && space.images.length > 0
+                        ? (space.images[0].startsWith('http')
+                            ? space.images[0]
+                            : `http://localhost:5001/${space.images[0].replace(/\\/g, '/')}`)
+                        : getSpaceImage(space.category, space.id)}
+                      alt={space.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop';
+                      }}
+                    />
+                    <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-2 py-1 rounded-full">
+                      <span className="text-sm font-semibold text-gray-900">{space.price.toLocaleString()} FCFA/jour</span>
                     </div>
                   </div>
 
-                  <p className="text-gray-600 mb-4 line-clamp-2">{space.description}</p>
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-semibold text-gray-900">{space.name}</h3>
+                      <div className="flex items-center">
+                        <span>
+                          {space.rating?.average !== undefined ? `${space.rating.average} ★` : 'N/A'}
+                          {space.rating?.count !== undefined ? ` (${space.rating.count} avis)` : ''}
+                        </span>
+                      </div>
+                    </div>
 
-                  <div className="flex items-center text-sm text-gray-500 mb-4">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    {space.location}
-                  </div>
+                    <p className="text-gray-600 mb-4 line-clamp-2">{space.description}</p>
 
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-600">
-                      <strong>Capacité:</strong> {space.capacity} personnes
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      <strong>Catégorie:</strong> {space.category}
-                    </span>
-                  </div>
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {space.location}
+                    </div>
 
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {space.amenities.slice(0, 3).map((amenity, index) => (
-                      <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                        {amenity}
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm text-gray-600">
+                        <strong>Capacité:</strong> {space.capacity} personnes
                       </span>
-                    ))}
-                    {space.amenities.length > 3 && (
-                      <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                        +{space.amenities.length - 3}
+                      <span className="text-sm text-gray-600">
+                        <strong>Catégorie:</strong> {space.category}
                       </span>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="flex gap-2 mt-2 items-center">
-                    <Link to={`/spaces/${space._id || space.id}`} aria-label="Détails" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-blue-100 transition">
-                      <FaEye className="text-blue-600 text-lg" />
-                    </Link>
-                    {user?.role === 'ADMIN' && (
-                      <>
-                        <Link to={`/spaces/edit/${space._id || space.id}`} aria-label="Modifier" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-yellow-100 transition">
-                          <FaEdit className="text-yellow-500 text-lg" />
-                        </Link>
-                        <button onClick={() => handleDelete(space._id || space.id)} aria-label="Supprimer" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-red-100 transition">
-                          <FaTrash className="text-red-600 text-lg" />
-                        </button>
-                      </>
-                    )}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {space.amenities.slice(0, 3).map((amenity, index) => (
+                        <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          {amenity}
+                        </span>
+                      ))}
+                      {space.amenities.length > 3 && (
+                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                          +{space.amenities.length - 3}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 mt-2 items-center">
+                      <Link to={`/spaces/${space._id || space.id}`} aria-label="Détails" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-blue-100 transition">
+                        <FaEye className="text-blue-600 text-lg" />
+                      </Link>
+                      {user?.role === 'ADMIN' && (
+                        <>
+                          <Link to={`/spaces/edit/${space._id || space.id}`} aria-label="Modifier" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-yellow-100 transition">
+                            <FaEdit className="text-yellow-500 text-lg" />
+                          </Link>
+                          <button onClick={() => handleDelete(space._id || space.id)} aria-label="Supprimer" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-red-100 transition">
+                            <FaTrash className="text-red-600 text-lg" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

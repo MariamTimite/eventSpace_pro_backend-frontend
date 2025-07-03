@@ -14,7 +14,9 @@ export const BOOKING_STATUS = {
  * Textes d'affichage pour chaque statut
  */
 export const getStatusText = (status) => {
-  switch (status) {
+  if (!status) return 'Statut inconnu';
+  const s = status.toLowerCase();
+  switch (s) {
     case BOOKING_STATUS.PENDING:
       return 'En attente';
     case BOOKING_STATUS.CONFIRMED:
@@ -36,7 +38,9 @@ export const getStatusText = (status) => {
  * Classes Tailwind pour le style de chaque statut
  */
 export const getStatusStyle = (status) => {
-  switch (status) {
+  if (!status) return { badge: 'bg-gray-100 text-gray-800', icon: 'text-gray-500', button: 'bg-gray-100 hover:bg-gray-200 text-gray-800' };
+  const s = status.toLowerCase();
+  switch (s) {
     case BOOKING_STATUS.PENDING:
       return {
         badge: 'bg-yellow-100 text-yellow-800',
@@ -86,19 +90,21 @@ export const getStatusStyle = (status) => {
  * Vérifie si une action est possible selon le statut actuel
  */
 export const canPerformAction = {
-  cancel: (status) => [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED].includes(status),
-  edit: (status) => [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED].includes(status),
-  confirm: (status) => status === BOOKING_STATUS.PENDING,
-  reject: (status) => status === BOOKING_STATUS.PENDING,
-  start: (status) => status === BOOKING_STATUS.CONFIRMED,
-  complete: (status) => status === BOOKING_STATUS.IN_PROGRESS
+  cancel: (status) => [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED].includes(status?.toLowerCase?.()),
+  edit: (status) => [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED].includes(status?.toLowerCase?.()),
+  confirm: (status) => status?.toLowerCase?.() === BOOKING_STATUS.PENDING,
+  reject: (status) => status?.toLowerCase?.() === BOOKING_STATUS.PENDING,
+  start: (status) => status?.toLowerCase?.() === BOOKING_STATUS.CONFIRMED,
+  complete: (status) => status?.toLowerCase?.() === BOOKING_STATUS.IN_PROGRESS
 };
 
 /**
  * Messages explicatifs pour chaque statut
  */
 export const getStatusDescription = (status) => {
-  switch (status) {
+  if (!status) return '';
+  const s = status.toLowerCase();
+  switch (s) {
     case BOOKING_STATUS.PENDING:
       return 'En attente de confirmation par l\'administrateur';
     case BOOKING_STATUS.CONFIRMED:
