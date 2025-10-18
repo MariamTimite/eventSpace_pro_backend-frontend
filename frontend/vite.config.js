@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
+    strictPort: false, // Permet d'utiliser un autre port si 3000 est occupé
     proxy: {
       '/api': {
         target: 'http://localhost:5001',
@@ -15,6 +16,22 @@ export default defineConfig({
     }
   },
   define: {
-    'process.env.VITE_API_URL': JSON.stringify('http://localhost:5001/api')
+    'process.env.VITE_API_URL': JSON.stringify(
+      process.env.NODE_ENV === 'production' 
+        ? 'https://eventspace-pro-backend.onrender.com/api'
+        : 'http://localhost:5001/api'
+    )
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom']
+        }
+      }
+    }
   }
 })

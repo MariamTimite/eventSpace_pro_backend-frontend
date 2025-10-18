@@ -18,6 +18,7 @@ const generateToken = (userId) => {
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
+    console.log('📝 Tentative d\'inscription avec les données:', req.body);
     const { firstName, lastName, email, password, phone } = req.body;
 
     if (!firstName || !lastName || !email || !password || !phone) {
@@ -77,6 +78,8 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Erreur lors de l\'inscription:', error);
+    console.error('❌ Détails de l\'erreur:', error.message);
+    console.error('❌ Stack trace:', error.stack);
 
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
@@ -87,9 +90,17 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Un utilisateur avec cet email existe déjà'
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Erreur serveur lors de l\'inscription'
+      message: 'Erreur serveur lors de l\'inscription',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

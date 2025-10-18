@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { spaceService } from '../services/api';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
+  const [popularSpaces, setPopularSpaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Récupérer les espaces populaires (les 3 premiers)
+    spaceService.getAll({ limit: 3 })
+      .then(res => {
+        setPopularSpaces(res.data.data || []);
+      })
+      .catch(err => {
+        console.error('Erreur lors du chargement des espaces populaires:', err);
+        setPopularSpaces([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -103,74 +121,140 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Space Card 1 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-              <div className="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Salle de conférence Cocody
-                </h3>
-                <p className="text-gray-600 mb-2">
-                  Salle moderne équipée pour conférences et présentations professionnelles.
-                </p>
-                <p className="text-sm text-gray-500 mb-4">📍 Cocody, Abidjan</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">150 000 FCFA/jour</span>
-                  <Link
-                    to="/spaces/1"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
-                  >
-                    Voir détails
-                  </Link>
+            {loading ? (
+              // Skeleton loading
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="h-48 bg-gray-200 animate-pulse"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse mb-4"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse mb-4"></div>
+                    <div className="flex justify-between items-center">
+                      <div className="h-6 bg-gray-200 rounded animate-pulse w-24"></div>
+                      <div className="h-8 bg-gray-200 rounded animate-pulse w-20"></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              ))
+            ) : popularSpaces.length > 0 ? (
+              // Espaces réels de la base de données
+              popularSpaces.map((space) => (
+                <div key={space._id || space.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  <div className="h-48 relative">
+                    {space.images && space.images.length > 0 ? (
+                      <img
+                        src={space.images[0].startsWith('http') 
+                          ? space.images[0] 
+                          : `http://localhost:5001/${space.images[0].replace(/\\/g, '/')}`}
+                        alt={space.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                        <span className="text-white text-sm">Aucune image</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {space.name}
+                    </h3>
+                    <p className="text-gray-600 mb-2 line-clamp-2">
+                      {space.description}
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">
+                      📍 {typeof space.address === 'string' 
+                        ? space.address 
+                        : `${space.address?.city || 'Abidjan'}, ${space.address?.country || 'Côte d\'Ivoire'}`}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-blue-600">
+                        {space.price?.toLocaleString()} FCFA / {space.priceType?.toLowerCase() || 'jour'}
+                      </span>
+                      <Link
+                        to={`/spaces/${space._id || space.id}`}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
+                      >
+                        Voir détails
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // Espaces par défaut si aucun espace trouvé
+              <>
+                {/* Space Card 1 */}
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  <div className="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Salle de conférence Cocody
+                    </h3>
+                    <p className="text-gray-600 mb-2">
+                      Salle moderne équipée pour conférences et présentations professionnelles.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">📍 Cocody, Abidjan</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-blue-600">150 000 FCFA/jour</span>
+                      <Link
+                        to="/spaces"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
+                      >
+                        Voir détails
+                      </Link>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Space Card 2 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-              <div className="h-48 bg-gradient-to-r from-green-400 to-blue-500"></div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Espace Coworking Plateau
-                </h3>
-                <p className="text-gray-600 mb-2">
-                  Espace de travail collaboratif avec équipements modernes et connexion internet haut débit.
-                </p>
-                <p className="text-sm text-gray-500 mb-4">📍 Plateau, Abidjan</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">80 000 FCFA/jour</span>
-                  <Link
-                    to="/spaces/2"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
-                  >
-                    Voir détails
-                  </Link>
+                {/* Space Card 2 */}
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  <div className="h-48 bg-gradient-to-r from-green-400 to-blue-500"></div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Espace Coworking Plateau
+                    </h3>
+                    <p className="text-gray-600 mb-2">
+                      Espace de travail collaboratif avec équipements modernes et connexion internet haut débit.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">📍 Plateau, Abidjan</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-blue-600">80 000 FCFA/jour</span>
+                      <Link
+                        to="/spaces"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
+                      >
+                        Voir détails
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Space Card 3 */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-              <div className="h-48 bg-gradient-to-r from-purple-400 to-pink-500"></div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Studio Photo Yopougon
-                </h3>
-                <p className="text-gray-600 mb-2">
-                  Studio professionnel pour shootings photos et vidéos avec éclairage professionnel.
-                </p>
-                <p className="text-sm text-gray-500 mb-4">📍 Yopougon, Abidjan</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-blue-600">120 000 FCFA/jour</span>
-                  <Link
-                    to="/spaces/4"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
-                  >
-                    Voir détails
-                  </Link>
+                {/* Space Card 3 */}
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+                  <div className="h-48 bg-gradient-to-r from-purple-400 to-pink-500"></div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Studio Photo Yopougon
+                    </h3>
+                    <p className="text-gray-600 mb-2">
+                      Studio professionnel pour shootings photos et vidéos avec éclairage professionnel.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">📍 Yopougon, Abidjan</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-bold text-blue-600">120 000 FCFA/jour</span>
+                      <Link
+                        to="/spaces"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
+                      >
+                        Voir détails
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
           
           <div className="text-center mt-12">

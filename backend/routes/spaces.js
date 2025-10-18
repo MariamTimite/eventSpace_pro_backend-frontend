@@ -436,4 +436,144 @@ router.get('/owner/my-spaces', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/spaces/admin/all
+// @desc    Récupérer tous les espaces (admin uniquement)
+// @access  Private (Admin)
+router.get('/admin/all', auth, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé. Droits administrateur requis.'
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 50,
+      type,
+      isActive,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    let filters = {};
+    if (type) filters.type = type;
+    if (isActive !== undefined) filters.isActive = isActive === 'true';
+
+    // Construire le tri
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const spaces = await Space.find(filters)
+      .populate('owner', 'firstName lastName email phone')
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Space.countDocuments(filters);
+
+    res.json({
+      success: true,
+      data: spaces.map(space => space.getPublicInfo()),
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des espaces admin:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur'
+    });
+  }
+});
+
+// @route   GET /api/spaces/admin/stats
+// @desc    Récupérer les statistiques des espaces (admin uniquement)
+// @access  Private (Admin)
+router.get('/admin/stats', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé. Droits administrateur requis.'
+      });
+    }
+
+    const totalSpaces = await Space.countDocuments();
+    const activeSpaces = await Space.countDocuments({ isActive: true });
+    const inactiveSpaces = await Space.countDocuments({ isActive: false });
+    
+    // Espaces par type
+    const spacesByType = await Space.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Espaces populaires (avec le plus de réservations)
+    const popularSpaces = await Space.aggregate([
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: '_id',
+          foreignField: 'space',
+          as: 'bookings'
+        }
+      },
+      {
+        $addFields: {
+          bookingCount: { $size: '$bookings' },
+          totalRevenue: {
+            $sum: {
+              $map: {
+                input: '$bookings',
+                as: 'booking',
+                in: '$$booking.totalPrice'
+              }
+            }
+          }
+        }
+      },
+      { $sort: { bookingCount: -1 } },
+      { $limit: 5 },
+      {
+        $project: {
+          name: 1,
+          type: 1,
+          bookingCount: 1,
+          totalRevenue: 1,
+          isActive: 1
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalSpaces,
+        activeSpaces,
+        inactiveSpaces,
+        spacesByType,
+        popularSpaces
+      }
+    });
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des statistiques des espaces:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur lors de la récupération des statistiques',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 

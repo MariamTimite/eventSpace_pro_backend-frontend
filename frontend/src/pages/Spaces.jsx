@@ -65,7 +65,7 @@ const Spaces = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const categories = ['Tous', 'Conference', 'Coworking', 'Meeting', 'Studio', 'Event', 'Training'];
+  const categories = ['Tous', 'BUREAU', 'SALLE_REUNION', 'SALLE_CONFERENCE', 'ESPACE_COWORKING', 'SALLE_FORMATION'];
   const capacities = ['Tous', '1-10', '11-25', '26-50', '51-100', '100+'];
 
   const handleSimpleFilter = () => {
@@ -76,13 +76,24 @@ const Spaces = () => {
       filtered = filtered.filter(space =>
         space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         space.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        space.location.toLowerCase().includes(searchTerm.toLowerCase())
+        (space.address && (
+          (typeof space.address === 'string' && space.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (typeof space.address === 'object' && (
+            space.address.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            space.address.street?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            space.address.country?.toLowerCase().includes(searchTerm.toLowerCase())
+          ))
+        )) ||
+        (space.type && space.type.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (space.amenities && space.amenities.some(amenity => 
+          amenity.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
       );
     }
 
     // Filtre par catégorie
     if (selectedCategory && selectedCategory !== 'Tous') {
-      filtered = filtered.filter(space => space.category === selectedCategory);
+      filtered = filtered.filter(space => space.type === selectedCategory);
     }
 
     // Filtre par capacité
@@ -103,7 +114,7 @@ const Spaces = () => {
 
     // Appliquer tous les filtres avancés
     if (filters.category && filters.category !== 'Tous') {
-      filtered = filtered.filter(space => space.category === filters.category);
+      filtered = filtered.filter(space => space.type === filters.category);
     }
 
     if (filters.minCapacity) {
@@ -124,13 +135,28 @@ const Spaces = () => {
 
     if (filters.amenities && filters.amenities.length > 0) {
       filtered = filtered.filter(space =>
-        filters.amenities.every(amenity => space.amenities.includes(amenity))
+        filters.amenities.every(amenity => space.amenities?.includes(amenity))
       );
     }
 
     if (filters.location) {
+      filtered = filtered.filter(space => {
+        if (typeof space.address === 'string') {
+          return space.address.toLowerCase().includes(filters.location.toLowerCase());
+        } else if (typeof space.address === 'object') {
+          return space.address.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+                 space.address.street?.toLowerCase().includes(filters.location.toLowerCase()) ||
+                 space.address.country?.toLowerCase().includes(filters.location.toLowerCase());
+        }
+        return false;
+      });
+    }
+
+    if (filters.search) {
       filtered = filtered.filter(space =>
-        space.location.toLowerCase().includes(filters.location.toLowerCase())
+        space.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        space.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+        (space.type && space.type.toLowerCase().includes(filters.search.toLowerCase()))
       );
     }
 
@@ -304,7 +330,7 @@ const Spaces = () => {
                       }}
                     />
                     <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-2 py-1 rounded-full">
-                      <span className="text-sm font-semibold text-gray-900">{space.price.toLocaleString()} FCFA/jour</span>
+                      <span className="text-sm font-semibold text-gray-900">{space.price?.toLocaleString()} FCFA/{space.priceType?.toLowerCase() || 'jour'}</span>
                     </div>
                   </div>
 
@@ -327,7 +353,9 @@ const Spaces = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {space.location}
+                      {typeof space.address === 'string' 
+                        ? space.address 
+                        : `${space.address?.city || 'Abidjan'}, ${space.address?.country || 'Côte d\'Ivoire'}`}
                     </div>
 
                     <div className="flex items-center justify-between mb-4">
@@ -335,7 +363,7 @@ const Spaces = () => {
                         <strong>Capacité:</strong> {space.capacity} personnes
                       </span>
                       <span className="text-sm text-gray-600">
-                        <strong>Catégorie:</strong> {space.category}
+                        <strong>Type:</strong> {space.type}
                       </span>
                     </div>
 

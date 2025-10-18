@@ -17,12 +17,11 @@ const AdvancedSearch = ({ onSearch, onReset }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const categories = [
-    { value: 'conference', label: 'Salle de conférence' },
-    { value: 'meeting', label: 'Salle de réunion' },
-    { value: 'workshop', label: 'Atelier' },
-    { value: 'event', label: 'Salle d\'événement' },
-    { value: 'coworking', label: 'Espace de coworking' },
-    { value: 'training', label: 'Salle de formation' }
+    { value: 'BUREAU', label: 'Bureau' },
+    { value: 'SALLE_REUNION', label: 'Salle de réunion' },
+    { value: 'SALLE_CONFERENCE', label: 'Salle de conférence' },
+    { value: 'ESPACE_COWORKING', label: 'Espace de coworking' },
+    { value: 'SALLE_FORMATION', label: 'Salle de formation' }
   ];
 
   const amenities = [
@@ -39,14 +38,14 @@ const AdvancedSearch = ({ onSearch, onReset }) => {
   ];
 
   const locations = [
-    'Paris Centre',
-    'Paris Nord',
-    'Paris Sud',
-    'Paris Est',
-    'Paris Ouest',
-    'La Défense',
-    'Montparnasse',
-    'Châtelet'
+    'Abidjan',
+    'Cocody',
+    'Plateau',
+    'Yopougon',
+    'Marcory',
+    'Bouaké',
+    'San-Pédro',
+    'Korhogo'
   ];
 
   const handleInputChange = (e) => {

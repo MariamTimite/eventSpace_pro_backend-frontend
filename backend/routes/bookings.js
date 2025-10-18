@@ -192,19 +192,12 @@ router.get('/', auth, async (req, res) => {
     let filters = {};
     let isOwner = false;
 
-    // Si admin, voir toutes les réservations
+    // Si admin, voir toutes les réservations (pas de filtre)
     if (req.user.role === 'ADMIN') {
-      // pas de filtre user ni owner
+      // Admin voit toutes les réservations - pas de filtre appliqué
     } else if (owner === 'true') {
       // Si ?owner=true, mode propriétaire
       isOwner = true;
-    } else {
-      // Sinon, utilisateur normal : ses propres réservations
-      filters.user = req.user._id;
-    }
-
-    // Si mode propriétaire (ou admin qui veut voir les réservations de ses espaces)
-    if (isOwner || req.user.role === 'ADMIN') {
       // Trouver les espaces dont il est propriétaire
       const Space = require('../models/Space');
       const ownedSpaces = await Space.find({ owner: req.user._id }).select('_id');
@@ -219,6 +212,9 @@ router.get('/', auth, async (req, res) => {
           pagination: { page: 1, limit: parseInt(limit), total: 0, pages: 1 }
         });
       }
+    } else {
+      // Sinon, utilisateur normal : ses propres réservations
+      filters.user = req.user._id;
     }
 
     if (status) filters.status = status;
@@ -331,8 +327,8 @@ router.put('/:id/status', auth, async (req, res) => {
       });
     }
 
-    // Vérifier que l'utilisateur est le propriétaire de l'espace
-    if (booking.space.owner.toString() !== req.user._id.toString()) {
+    // Vérifier que l'utilisateur est le propriétaire de l'espace OU admin
+    if (booking.space.owner.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         message: 'Accès non autorisé'
@@ -651,6 +647,68 @@ router.get('/availability/:spaceId', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erreur serveur lors de la vérification de disponibilité'
+    });
+  }
+});
+
+// @route   GET /api/bookings/admin/all
+// @desc    Récupérer toutes les réservations (admin uniquement)
+// @access  Private (Admin)
+router.get('/admin/all', auth, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès refusé. Droits administrateur requis.'
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 50,
+      status,
+      paymentStatus,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    let filters = {};
+    if (status) filters.status = status;
+    if (paymentStatus) filters.paymentStatus = paymentStatus;
+
+    // Construire le tri
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const bookings = await Booking.find(filters)
+      .populate('user', 'firstName lastName email phone')
+      .populate('space', 'name type capacity price owner')
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Booking.countDocuments(filters);
+
+    res.json({
+      success: true,
+      data: bookings.map(booking => booking.getPublicInfo()),
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des réservations admin:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur'
     });
   }
 });

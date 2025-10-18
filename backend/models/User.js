@@ -39,8 +39,8 @@ const userSchema = new mongoose.Schema({
     trim: true,
     validate: {
       validator: function(v) {
-        // Validation basique pour numéros ivoiriens et internationaux
-        return /^(\+225|0)[0-9\s-]{8,}$/.test(v);
+        // Validation plus flexible pour numéros internationaux
+        return /^[\+]?[0-9\s\-\(\)]{8,}$/.test(v);
       },
       message: 'Veuillez entrer un numéro de téléphone valide'
     }

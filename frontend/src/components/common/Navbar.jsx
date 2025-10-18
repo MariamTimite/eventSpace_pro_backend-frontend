@@ -47,14 +47,6 @@ const Navbar = () => {
                 >
                   Dashboard
                 </Link>
-                {isAdmin && (
-                  <Link 
-                    to="/admin" 
-                    className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition duration-200"
-                  >
-                    Admin
-                  </Link>
-                )}
               </>
             ) : null}
           </div>
@@ -137,15 +129,6 @@ const Navbar = () => {
                 >
                   Dashboard
                 </Link>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                )}
                 <div className="border-t pt-4">
                   <span className="text-gray-700 block px-3 py-2 text-sm">
                     Bonjour, {user?.firstName}
