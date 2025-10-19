@@ -17,7 +17,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       'https://eventspace-pro.netlify.app',
       'https://eventspace-pro-frontend.netlify.app',
-      'https://your-netlify-domain.netlify.app'
+      'https://your-netlify-domain.netlify.app',
+      'https://event-space-pro-backend-frontend-orqmae9zl.vercel.app'
     ]
   : [
       'http://localhost:3000', 
